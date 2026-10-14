@@ -1,10 +1,18 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI,HTTPException, Depends
 from app.routers import health,tasks,users, dashboard
+from app.db.database import init_db
+
+@asynccontextmanager
+async def lifespan(app = FastAPI):
+    await init_db()
+    yield
 
 app = FastAPI(
      title="Task Management API",
     description="A production-style async Task Management API",
-    version="1.0.0",)
+    version="1.0.0",
+    lifespan=lifespan)
 
 app.include_router(health.router)
 app.include_router(tasks.router)
