@@ -5,7 +5,7 @@ class TaskCreate(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     description: str | None = Field(default=None, max_length=2000)
 
-    @field_validator(title)
+    @field_validator("title")
     @classmethod
     def validate_title(cls, value: str) -> str:
         value = value.strip()
@@ -21,11 +21,11 @@ class TaskUpdate(BaseModel):
     description: str | None = Field(default=None, max_length=2000)
     completed: bool | None = None
 
-    @field_validator(title)
+    @field_validator("title")
     @classmethod
     def validate_title(cls, value: str | None) -> str | None:
 
-        if not value:
+        if value is None:
             return value
 
         value = value.strip()

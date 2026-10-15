@@ -4,7 +4,7 @@ from app.routers import health,tasks,users, dashboard
 from app.db.database import init_db
 
 @asynccontextmanager
-async def lifespan(app = FastAPI):
+async def lifespan(app: FastAPI):
     await init_db()
     yield
 
