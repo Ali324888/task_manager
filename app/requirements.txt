@@ -5,3 +5,4 @@ pydantic-settings
 PyJWT
 pwdlib[argon2]
 python-multipart
+python-dotenv

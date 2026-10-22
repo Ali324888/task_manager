@@ -4,6 +4,7 @@ import aiosqlite
 from fastapi import APIRouter,Depends, HTTPException, status
 from app.schemas.user import UserPublic, UserCreate
 from app.dependencies.database import get_db
+from app.dependencies.auth import get_current_user
 from app.services.user_service import create_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -28,3 +29,8 @@ async def register_user(user_data: UserCreate, db: aiosqlite.Connection = Depend
             status_code=status.HTTP_409_CONFLICT,
             detail=detail
         )
+
+
+@router.get("/me", response_model=UserPublic)
+async def read_current_user(current_user: UserPublic = Depends(get_current_user)):
+    return current_user

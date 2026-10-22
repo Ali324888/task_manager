@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI,HTTPException, Depends
-from app.routers import health,tasks,users, dashboard
+from fastapi import FastAPI
+from app.routers import health,tasks,users, dashboard, auth
 from app.db.database import init_db
 
 @asynccontextmanager
@@ -18,6 +18,7 @@ app.include_router(health.router)
 app.include_router(tasks.router)
 app.include_router(users.router)
 app.include_router(dashboard.router)
+app.include_router(auth.router)
 
 @app.get("/")
 async def root():
