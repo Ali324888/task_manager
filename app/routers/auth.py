@@ -28,7 +28,22 @@ async def login(
     # 3. Create access token
     access_token = create_access_token(user["id"]) 
     # 4. Create refresh token
-    refresh_token = create_refresh_token(user["id"]) 
+    refresh_token, jti, expires_at = create_refresh_token(user["id"]) 
+
+    try:
+        await db.execute(
+            """
+            Insert Into refresh_tokens (jti,user_id,expires_at) Values (?,?,?,)
+            """
+        )
+        await db.commit()
+
+    except aiosqlite.IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not create refresh token"
+        )
     # 5. Return TokenResponse-compatible dictionary
     return {
         "access_token": access_token,

@@ -36,4 +36,25 @@ async def init_db():
             )
         """)
 
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS refresh_tokens (
+                jti TEXT PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                expires_at INTEGER NOT NULL,
+                revoked_at INTEGER,
+                replaced_by TEXT,
+                created_at INTEGER NOT NULL DEFAULT (
+                    CAST(strftime('%s', 'now') AS INTEGER)
+                ),
+                FOREIGN KEY (user_id)
+                    REFERENCES users(id)
+                    ON DELETE CASCADE
+            )
+        """)
+
+        await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id
+            ON refresh_tokens(user_id)
+        """)
+
         await db.commit()
