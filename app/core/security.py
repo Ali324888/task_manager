@@ -25,8 +25,8 @@ def create_token(subject: str, token_type: str, expire_delta: timedelta, jti: st
         "exp": now+expire_delta
     }
 
-    if token_type == 'refresh':
-        payload["jti"] = str(uuid4())
+    if jti is not None:
+        payload["jti"] = jti
 
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
 

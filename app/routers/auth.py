@@ -32,11 +32,18 @@ async def login(
     refresh_token, jti, expires_at = create_refresh_token(user["id"]) 
 
     try:
+        # await db.execute(
+        #     """
+        #     Insert Into refresh_tokens (jti,user_id,expires_at) Values (?,?,?,)
+        #     """,
+        #     (jti, user['id'], expires_at,),
+        # )
         await db.execute(
             """
-            Insert Into refresh_tokens (jti,user_id,expires_at) Values (?,?,?,)
+            INSERT INTO refresh_tokens (jti, user_id, expires_at)
+            VALUES (?, ?, ?)
             """,
-            (jti, user['id'], expires_at,)
+            (jti, user["id"], expires_at),
         )
         await db.commit()
 
@@ -66,6 +73,7 @@ async def refresh_access_token(
     
     try:
         payload = decode_token(request.refresh_token)
+        print(payload)
 
     except (InvalidTokenError, ValueError) as exc:
             raise credentials_exception from exc
@@ -96,25 +104,32 @@ async def refresh_access_token(
 
         cursor = await db.execute(
             """
-            Update refresh_tokens Set revoked_at=?, replaced_by=?
-            Where jti=? And user_id=? And revoked_at is NULL And expires_at > ?
+            UPDATE refresh_tokens SET revoked_at=?, replaced_by=?
+            WHERE jti=? AND user_id=? AND revoked_at IS NULL AND expires_at > ?
             """,
             (now, new_jti, jti, user_id, now)
         )
+        print(jti)
+        print(cursor.rowcount)
 
         if cursor.rowcount != 1:
             await db.rollback()
             raise credentials_exception
 
+        print(cursor.rowcount)
+
         await cursor.close()
 
         await db.execute(
-                    """
-                    Insert Into refresh_tokens (jti,user_id,expires_at) Values (?,?,?,)
-                    """,
-                    (new_jti, user_id, new_expires_at)
-                )
+            """
+            INSERT INTO refresh_tokens (jti, user_id, expires_at)
+            VALUES (?, ?, ?)
+            """,
+            (new_jti, user_id, new_expires_at),
+        )
         await db.commit()
+    except HTTPException:
+        raise
     except Exception:
         await db.rollback()
         raise HTTPException(
@@ -166,7 +181,7 @@ async def refresh_access_token(
         """,
         (now, jti, user_id)
     ) as cursor:
-        revoked = await cursor.rowcount
+        revoked = cursor.rowcount
 
     await db.commit()
 
