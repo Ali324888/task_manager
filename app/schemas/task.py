@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class TaskCreate(BaseModel):
@@ -43,5 +43,7 @@ class TaskPublic(BaseModel):
     description: str | None
     completed: bool
     created_at: str
+
+    model_config = ConfigDict(from_attributes=True)
 
     
